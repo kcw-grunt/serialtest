@@ -17,20 +17,30 @@ Serialport.list(function (err, ports) {
       }
     });
     console.log('Selected port: '+ devicePath);
-    port = SerialPort(devicePath,9600);
-    port.on('open', () => {
-        console.log('Port Opened');
-      });
-      
-      port.write('main screen turn on', (err) => {
+
+    port = SerialPort(devicePath,9600, () =>{
+      console.log('Port Opened');
+    });
+  
+    port.on('readable', function () {
+        console.log('Data:', port.read());
+    });
+
+    port.write('ECHO ON \r\n', (err) => {
         if (err) { return console.log('Error: ', err.message) }
-        console.log('message written');
-      });
-      
-      port.on('data', (data) => {
-        /* get a buffer of data from the serial port */
+        console.log('ECHO is on');
+    });
+
+    port.write('KISS ON RESTART\r\n', (err) => {
+    if (err) { return console.log('Error: ', err.message) }
+    console.log('KISS is on. Restarting....');
+    });
+
+    port.on('data', (data) => {
         console.log(data.toString());
-      });
+    });
+ 
+
 });
 
 
