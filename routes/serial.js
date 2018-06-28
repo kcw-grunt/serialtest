@@ -1,32 +1,38 @@
 'use strict';
-var express = require('express');
-var router = express.Router();
-var serialport = require('serialport'); 
-var port = serialport.SerialPort; 
-// var Readline = SerialPort.parsers.Readline; // make instance of Readline parser
-// var parser = new Readline();
 var util = require('util');
 var repl = require('repl');
-var devicePath = "";
+var express = require('express');
+var router = express.Router();
+var Serialport = require('serialport'); 
+const SerialPort = require('serialport');
+var devicePath = '/dev/tty.SLAB_USBtoUART'; 
+var port = new SerialPort(devicePath);
+
 
 // Set port path regardless of OS
-serialport.list(function (err, ports) {
+Serialport.list(function (err, ports) {
     ports.forEach(function(port) {
-      console.log(port.comName);
       if (port.comName === '/dev/tty.SLAB_USBtoUART' || port.comName === '/dev/ttyUSB0') {
         devicePath = port.comName;
       }
     });
-    console.log(devicePath);
+    console.log('Selected port: '+ devicePath);
+    port = SerialPort(devicePath,9600);
+    port.on('open', () => {
+        console.log('Port Opened');
+      });
+      
+      port.write('main screen turn on', (err) => {
+        if (err) { return console.log('Error: ', err.message) }
+        console.log('message written');
+      });
+      
+      port.on('data', (data) => {
+        /* get a buffer of data from the serial port */
+        console.log(data.toString());
+      });
 });
 
-port = SerialPort(devicePath,9600, function (err){
-    if (err) {
-        return console.log('Error: ', err.message);
-    }else{
-        console.log('port initialized');
-    }
-});
 
 
 router.get('/', function (req,res) {
