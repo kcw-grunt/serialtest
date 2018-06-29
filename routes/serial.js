@@ -46,7 +46,7 @@ var port = new SerialPort(devicePath,{
     });
 
     port.on('data', function (data) {
-        console.log('Data:',data.data.toString('utf8'));
+        console.log('Data:',data.toString('utf8'));
     });
  
 
