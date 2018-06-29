@@ -27,13 +27,7 @@ var port = new SerialPort(devicePath,{
         flowControl:false,
         parser: parser
     });
-
-  
-    port.on('open', showPortOpen);
-    parser.on('data', readSerialData);
-    port.on('close', showPortClose);
-    port.on('error', showError);
-
+ 
     port.write('ECHO ON \r\n', (err) => {
         if (err) { return console.log('Error: ', err.message) }
         console.log('ECHO is on');
@@ -47,12 +41,13 @@ var port = new SerialPort(devicePath,{
     // port.on('data', function (data) {
     //     console.log('Data:',data.toString('utf8'));
     // });
-
-
  
-
 });
 
+port.on('open', showPortOpen);
+parser.on('data', readSerialData);
+port.on('close', showPortClose);
+port.on('error', showError);
 
 
 
