@@ -18,12 +18,18 @@ Serialport.list(function (err, ports) {
     });
     console.log('Selected port: '+ devicePath);
 
-    port = SerialPort(devicePath,9600, () =>{
-      console.log('Port Opened');
+    port = SerialPort(devicePath,{
+        baudRate:9600,
+        autoOpen:false,
+        flowControl:false,
+        parser: new Readline('\r\n')
     });
   
-    port.on('readable', function () {
-        console.log('Data:', port.read());
+    port.open(function (err) {
+        if (err){
+            return console.log('Error opening port:', err.message);
+        }
+        console.log('Port Open!');
     });
 
     port.write('ECHO ON \r\n', (err) => {
@@ -36,8 +42,8 @@ Serialport.list(function (err, ports) {
     console.log('KISS is on. Restarting....');
     });
 
-    port.on('data', (data) => {
-        console.log(data.toString());
+    port.on('data', function (data) {
+        console.log('Data:',data.data.toString('utf8'));
     });
  
 
