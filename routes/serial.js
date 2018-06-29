@@ -68,9 +68,7 @@ function showError(){
 
 
 router.get('/', function (req,res) {
-
-  
-  
+    req.send({response:'In serial'}); 
 });
 
 
