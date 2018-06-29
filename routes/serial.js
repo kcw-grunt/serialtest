@@ -2,15 +2,18 @@
 var util = require('util');
 var repl = require('repl');
 var express = require('express');
-var router = express.Router();
-var Serialport = require('serialport'); 
-const SerialPort = require('serialport');
+var router = express.Router(); 
+var SerialPort = require('serialport');
 var devicePath = '/dev/tty.SLAB_USBtoUART'; 
-var port = new SerialPort(devicePath);
-
+const parsers = SerialPort.parsers;
+// Use a `\r\n` as a line terminator
+const parser = new parsers.Readline({
+    delimiter: '\r\n'
+  });
+  var port = new SerialPort(devicePath,9600);
 
 // Set port path regardless of OS
-Serialport.list(function (err, ports) {
+SerialPort.list(function (err, ports) {
     ports.forEach(function(port) {
       if (port.comName === '/dev/tty.SLAB_USBtoUART' || port.comName === '/dev/ttyUSB0') {
         devicePath = port.comName;
@@ -18,11 +21,11 @@ Serialport.list(function (err, ports) {
     });
     console.log('Selected port: '+ devicePath);
 
-    port = SerialPort(devicePath,{
+var port = new SerialPort(devicePath,{
         baudRate:9600,
         autoOpen:false,
         flowControl:false,
-        parser: new Readline('\r\n')
+        parser: parser
     });
   
     port.open(function (err) {
