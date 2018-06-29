@@ -19,7 +19,7 @@ SerialPort.list(function (err, ports) {
         devicePath = port.comName;
       }
     });
-    console.log('Selected port: '+ devicePath);
+    console.log('Selected port: '+ devicePath +'\n');
 
 var port = new SerialPort(devicePath,{
         baudRate:9600,
@@ -27,13 +27,12 @@ var port = new SerialPort(devicePath,{
         flowControl:false,
         parser: parser
     });
+
   
-    port.open(function (err) {
-        if (err){
-            return console.log('Error opening port:', err.message);
-        }
-        console.log('Port Open!');
-    });
+    port.on('open', showPortOpen);
+    parser.on('data', readSerialData);
+    port.on('close', showPortClose);
+    port.on('error', showError);
 
     port.write('ECHO ON \r\n', (err) => {
         if (err) { return console.log('Error: ', err.message) }
@@ -49,10 +48,7 @@ var port = new SerialPort(devicePath,{
     //     console.log('Data:',data.toString('utf8'));
     // });
 
-    port.on('open', showPortOpen);
-    parser.on('data', readSerialData);
-    port.on('close', showPortClose);
-    port.on('error', showError);
+
  
 
 });
