@@ -45,13 +45,34 @@ var port = new SerialPort(devicePath,{
     console.log('KISS is on. Restarting....');
     });
 
-    port.on('data', function (data) {
-        console.log('Data:',data.toString('utf8'));
-    });
+    // port.on('data', function (data) {
+    //     console.log('Data:',data.toString('utf8'));
+    // });
+
+    port.on('open', showPortOpen);
+    parser.on('data', readSerialData);
+    port.on('close', showPortClose);
+    port.on('error', showError);
  
 
 });
 
+
+
+
+
+function showPortOpen(){
+    console.log('port open. Data rate: ' + myPort.baudRate);
+}
+function readSerialData(){
+    console.log(data);
+}
+function showPortClose(){
+    console.log('port closed.');
+}
+function showError(){
+    console.log('Serial port error: ' + error);
+}
 
 
 router.get('/', function (req,res) {
