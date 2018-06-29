@@ -4,7 +4,7 @@ var repl = require('repl');
 var express = require('express');
 var router = express.Router(); 
 var SerialPort = require('serialport');
-var devicePath = '/dev/tty.SLAB_USBtoUART'; 
+var devicePath = '/dev/ttyUSB0'; 
 const parsers = SerialPort.parsers;
 // Use a `\r\n` as a line terminator
 const parser = new parsers.Readline({
