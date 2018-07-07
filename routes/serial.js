@@ -2,11 +2,16 @@
 var express = require('express');
 var router = express.Router();
 var util = require("util");
+var SerialPort	= require("serialport"); 
+var SerialPort = serialport.SerialPort; // localize object constructor
+ 
+var sp = new SerialPort("/dev/tty-usbserial1", {
+  parser: serialport.parsers.raw
+});
+
+
+//const Readline = require('@serialport/parser-readline')
  //var ax25 = require('th-d72-ax25');
-
-
-var SerialPort	= require("serialport");
-const Readline = require('@serialport/parser-readline')
 
 
 var devicePath = '/dev/ttyUSB0';
@@ -18,9 +23,7 @@ if (osvar == 'darwin') {
 }else{ 
 	devicePath = '/dev/ttyUSB0';
 }
-
-
-
+ 
 var port = new SerialPort(devicePath, function (err) {
 	if (err) {
 	  return console.log('Error: ', err.message);
@@ -33,6 +36,19 @@ var port = new SerialPort(devicePath, function (err) {
 	}
 	console.log('message written');
   });
+
+  port.write('KISS ON\r\n', function(err) {
+
+  });
+
+  port.on("data", function (data) {
+	sys.puts("here: "+data);
+  });
+
+
+  port.write('IT WORKS\r\n', function(err) {
+
+});
 
 
 
