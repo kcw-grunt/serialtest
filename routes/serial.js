@@ -1,142 +1,93 @@
 'use strict';
-var util = require('util');
-var repl = require('repl');
 var express = require('express');
-var router = express.Router(); 
-var SerialPort = require('serialport');
-var devicePath = '/dev/ttyUSB0'; 
-const parsers = SerialPort.parsers;
-// Use a `\r\n` as a line terminator
-const parser = new parsers.Readline({
-    delimiter: '\r\n'
-  });
-  var port = new SerialPort(devicePath,9600);
+var router = express.Router();
+var util = require("util");
+var ax25 = require('th-d72-ax25');
 
-// Set port path regardless of OS
-SerialPort.list(function (err, ports) {
-    ports.forEach(function(port) {
-      if (port.comName === '/dev/tty.SLAB_USBtoUART' || port.comName === '/dev/ttyUSB0') {
-        devicePath = port.comName;
-      }
-    });
-    console.log('Selected port: '+ devicePath +'\n');
 
-var port = new SerialPort(devicePath,{
-        baudRate:9600,
-        autoOpen:false,
-        flowControl:false,
-        parser: parser
-    });
- 
-    port.write('ECHO ON \r\n', (err) => {
-        if (err) { return console.log('Error: ', err.message) }
-        console.log('ECHO is on');
-    });
+var devicePath = '/dev/ttyUSB0';
+var osvar = process.platform;
+console.log(osvar);
+if (osvar == 'darwin') {
+	console.log("Using Mac OS");
+    devicePath = '/dev/tty.SLAB_USBtoUART';
+}else{ 
+	devicePath = '/dev/ttyUSB0';
+}
 
-    port.write('KISS ON RESTART\r\n', (err) => {
-    if (err) { return console.log('Error: ', err.message) }
-    console.log('KISS is on. Restarting....');
-    });
 
-    // port.on('data', function (data) {
-    //     console.log('Data:',data.toString('utf8'));
-    // });
-    port.on('open', showPortOpen);
-    parser.on('data', readSerialData);
-    port.on('close', showPortClose);
-    port.on('error', showError);
- 
+router.get('/', function (req,res) { 
+	res.render('terminal', { title: 'Terminal Page' });
 });
 
-
-
-
-
-
-function showPortOpen(){
-    console.log('port open. Data rate: ' + myPort.baudRate);
-}
-function readSerialData(){
-    console.log(data);
-}
-function showPortClose(){
-    console.log('port closed.');
-}
-function showError(){
-    console.log('Serial port error: ' + error);
-}
-
-
-router.get('/', function (req,res) {
-    req.send({response:'In serial'}); 
-});
-
-
-router.get('/openevent',function (req, res){
-    port.on('open', () => {
-        console.log('Port Opened');
-      });
+// /* GET Hello World page. */
+// router.get('/terminal', function(req, res) {
+//     //res.render('terminal', { title: 'Hello, Terminal' });
+//     res.send('GET Handler for the /terminal endppint');
+// });
       
-      port.write('main screen turn on', (err) => {
-        if (err) { return console.log('Error: ', err.message) }
-        console.log('message written');
-      });
-      
-      port.on('data', (data) => {
-        /* get a buffer of data from the serial port */
-        console.log(data.toString());
-      });
-});
-
-router.post('/', function (req,res) {
-    res.send('POST handler for the /tnc route');
-});
-
-router.get('/sender/:senderCallsign/destination/:destCallsign', function (req,res) {
-
-    //This sends a JSON  res.send(req.params) 
-});
-
-router.get('/sender/:senderCallsign/destination/:destCallsign/message/:messageText', function (req,res) {
-    res.send(req.params)
-});
-
-router.get('/echotest/kiss', function (req,res, next) {
-    port.write("Yo peeps");
-    next()
-}, function (req, res) {
-    res.send('KISS started')
-});
-
-// router.get('/func/:funcID?', function (req,res){
-
-//     let fun = req.query.funcId; 
-//     switch (fun) {
-//         case '1':
-//         res.send('First is best')
-//         case '2':
-//         res.send('Second is ok')
-//         default:
-//         res.send('DEFAULT')
-//     }
+// router.post('/terminal', function(req, res) {
+//     //res.render('terminal', { title: 'Hello, Terminal' });
+//     res.send('POST Handler for the /terminal endppint');
 // });
 
-router.get('/parser', function (req,res){
-    
-    const parsers = SerialPort.parsers;
-    // Use a `\r\n` as a line terminator
-    const parser = new parsers.Readline({
-    delimiter: '\r\n'
-    });
+ 
+var tnc = new ax25.kissTNC(
+    {	'serialPort' : devicePath,
+        'baudRate' : 9600
+    }
+);
+ 
+var beacon = function() {
+    var packet = new ax25.Packet(
+        {	sourceCallsign : "MYCALL",
+            destinationCallsign : "BEACON",
+            type : ax25.U_FRAME_UI,
+            infoString : "Hello world!"
+        }
+    );
+    var frame = packet.assemble();
+    tnc.send(frame);
+    console.log("Beacon sent.");
+}
+ 
+tnc.on(
+    "error",
+    function(err) {
+        console.log(err);
+    }
+);
+ 
+tnc.on(
+    "opened",
+    function() {
+        console.log("TNC opened on " + tnc.serialPort + " at " + tnc.baudRate);
+        setInterval(beacon, 30000); // Beacon every 30 seconds - excessive!
+    }
+);
+ 
+tnc.on(
+    "frame",
+    function(frame) {
+        var packet = new ax25.Packet({ 'frame' : frame });
+        console.log(
+            util.format(
+                "Packet seen from %s-%s to %s-%s.",
+                packet.sourceCallsign,
+                packet.sourceSSID,
+                packet.destinationCallsign,
+                packet.destinationSSID
+            )
+        );
+        if(packet.infoString != "")
+            console.log(packet.infoString);
+    }
+);
 
-    port.pipe(parser);
-    port.on('open', () => console.log('Port open'));
-    parser.on('data', console.log);
-    port.write('ROBOT PLEASE RESPOND\n');
+
+
+
+router.get('/sendmessage', function (req,res) { 
+    console.log('form info');
 });
-
-
-
-
 module.exports = router;
-
