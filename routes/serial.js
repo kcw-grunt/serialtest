@@ -2,12 +2,11 @@
 var express = require('express');
 var router = express.Router();
 var util = require("util");
+var serialport	= require("serialport"); 
+//var SerialPort = serialport.SerialPort;
 var SerialPort	= require("serialport"); 
-var SerialPort = serialport.SerialPort; // localize object constructor
- 
-var sp = new SerialPort("/dev/tty-usbserial1", {
-  parser: serialport.parsers.raw
-});
+
+// Use a `\r\n` as a line terminator 
 
 
 //const Readline = require('@serialport/parser-readline')
@@ -24,32 +23,62 @@ if (osvar == 'darwin') {
 	devicePath = '/dev/ttyUSB0';
 }
  
-var port = new SerialPort(devicePath, function (err) {
-	if (err) {
-	  return console.log('Error: ', err.message);
-	}
-  });
+ 
+var port = new SerialPort(devicePath, {
+  baudRate:9600,
+  parser:serialport.parsers.raw
+});  
+
+ 
    
-  port.write('main screen turn on', function(err) {
-	if (err) {
-	  return console.log('Error on write: ', err.message);
-	}
-	console.log('message written');
+port.on('data', function(data) {
+  console.log('Port Data');
+  sys.puts("here:"+data);
   });
 
-  port.write('KISS ON\r\n', function(err) {
+  port.write('KISS ON\r\n', function(err,result) {
+	console.log('KISS ON Turned on'+result);
+  });
 
+  port.write('RESTART\r\n', function(err,result) {
+    console.log('Restarted'+result);
+  });
+
+  port.on('open', function() {
+	console.log('Port Opened');
+  });
+
+  port.on('closed', function() {
+	console.log('Port Closed');
+  });
+
+  port.on('readable', function() {
+	console.log('Data:', port.read());
   });
 
   port.on("data", function (data) {
-	sys.puts("here: "+data);
+	console.log('here: '+data);
   });
 
-
+ 
   port.write('IT WORKS\r\n', function(err) {
+	//console.log('DOES IT?');
 
-});
+  });
 
+  function readSerialData(data) {
+    console.log("Reading Serail Data:\n")
+    console.log(data);
+  }
+
+  var start = Date.now();
+  setInterval(function() {
+      var delta = Date.now() - start; // milliseconds elapsed since start
+      console.log(Math.floor(delta / 5000)); // in seconds
+      // alternatively just show wall clock time:
+      console.log(new Date().toUTCString());
+      port.write('DISP\r\n');
+  }, 5000); // update about every second
 
 
 
