@@ -1,12 +1,9 @@
 'use strict';
 var express = require('express');
 var router = express.Router();
-var util = require("util"); 
-const SerialPort = require('serialport')
-const Delimiter = require('@serialport/parser-delimiter')
- 
-
+var SerialPort = require( 'serialport' );
 var devicePath = '/dev/ttyUSB0';
+
 var osvar = process.platform;
 console.log(osvar);
 if (osvar == 'darwin') {
@@ -16,65 +13,44 @@ if (osvar == 'darwin') {
 	devicePath = '/dev/ttyUSB0';
 }
  
- 
-var port = new SerialPort(devicePath, {
-  baudRate:9600,
-  parser:serialport.parsers.raw
-});  
-
- 
-   
-port.on('data', function(data) {
-  console.log('Port Data');
-  sys.puts("here:"+data);
-  });
-
-const parser = port.pipe(new Delimiter({ delimiter: '\n' }))
-parser.on('data', console.log)
-
-  port.write('KISS ON\r\n', function(err,result) {
-	console.log('KISS ON Turned on'+result);
-  });
-
-  port.write('RESTART\r\n', function(err,result) {
-    console.log('Restarted'+result);
-  });
-
-  port.on('open', function() {
-	console.log('Port Opened');
-  });
-
-  port.on('closed', function() {
-	console.log('Port Closed');
-  });
-
-  port.on('readable', function() {
-	console.log('Data:', port.read());
-  });
-
-  port.on("data", function (data) {
-	console.log('here: '+data);
-  });
-
- 
-  port.write('IT WORKS\r\n', function(err) {
-	//console.log('DOES IT?');
-
-  });
-
-  function readSerialData(data) {
-    console.log("Reading Serail Data:\n")
-    console.log(data);
+  
+var port = new SerialPort.SerialPort( devicePath, { // change path
+  baudrate: 9600,
+  parser: SerialPort.parsers.readline( '\r\n' )
+, function ( err ) {
+  if ( err ) {
+    console.error('error opening serial port:' , err);
   }
+}
+});
 
-  var start = Date.now();
-  setInterval(function() {
-      var delta = Date.now() - start; // milliseconds elapsed since start
-      console.log(Math.floor(delta / 5000)); // in seconds
-      // alternatively just show wall clock time:
-      console.log(new Date().toUTCString());
-      port.write('DISP\r\n');
-  }, 5000); // update about every second
+port.on('data', function(data) {
+  console.log(data)
+});
+ 
+port.write('KISS ON\r\n', function(err) {
+  console.log('KISS ON Turned on');
+});
+
+port.write('RESTART\r\n', function(err) {
+  console.log('Restarted');
+});
+
+port.on('open', function() {
+  console.log('Port Opened');
+});
+
+port.on('closed', function() {
+  console.log('Port Closed');
+});
+
+var start = Date.now();
+setInterval(function() {
+    var delta = Date.now() - start; // milliseconds elapsed since start
+     // alternatively just show wall clock time:
+    console.log(new Date().toUTCString());
+    port.write('I\r\n');
+}, 5000); // update  
 
 
 
@@ -82,22 +58,5 @@ router.get('/', function (req,res) {
 	res.render('terminal', { title: 'Terminal Page' });
 });
 
-// /* GET Hello World page. */
-// router.get('/terminal', function(req, res) {
-//     //res.render('terminal', { title: 'Hello, Terminal' });
-//     res.send('GET Handler for the /terminal endppint');
-// });
-      
-// router.post('/terminal', function(req, res) {
-//     //res.render('terminal', { title: 'Hello, Terminal' });
-//     res.send('POST Handler for the /terminal endppint');
-// });
 
-  
-
-
-
-router.get('/sendmessage', function (req,res) { 
-    console.log('form info');
-});
 module.exports = router;
