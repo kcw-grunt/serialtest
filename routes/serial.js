@@ -1,17 +1,10 @@
 'use strict';
 var express = require('express');
 var router = express.Router();
-var util = require("util");
-var serialport	= require("serialport"); 
-//var SerialPort = serialport.SerialPort;
-var SerialPort	= require("serialport"); 
-
-// Use a `\r\n` as a line terminator 
-
-
-//const Readline = require('@serialport/parser-readline')
- //var ax25 = require('th-d72-ax25');
-
+var util = require("util"); 
+const SerialPort = require('serialport')
+const Delimiter = require('@serialport/parser-delimiter')
+ 
 
 var devicePath = '/dev/ttyUSB0';
 var osvar = process.platform;
@@ -35,6 +28,9 @@ port.on('data', function(data) {
   console.log('Port Data');
   sys.puts("here:"+data);
   });
+
+const parser = port.pipe(new Delimiter({ delimiter: '\n' }))
+parser.on('data', console.log)
 
   port.write('KISS ON\r\n', function(err,result) {
 	console.log('KISS ON Turned on'+result);
