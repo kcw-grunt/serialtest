@@ -1,7 +1,10 @@
 'use strict';
 var express = require('express');
-var router = express.Router();
-var SerialPort = require( 'serialport' );
+var router = express.Router(); 
+var serialport = require('serialport');
+var SerialPort = serialport.SerialPort;
+  
+
 var devicePath = '/dev/ttyUSB0';
 
 var osvar = process.platform;
@@ -14,7 +17,7 @@ if (osvar == 'darwin') {
 }
  
   
-var port = new SerialPort.SerialPort( devicePath, { // change path
+var port = new SerialPort( devicePath, { // change path
   baudrate: 9600,
   parser: SerialPort.parsers.readline( '\r\n' )
 , function ( err ) {
@@ -49,7 +52,9 @@ setInterval(function() {
     var delta = Date.now() - start; // milliseconds elapsed since start
      // alternatively just show wall clock time:
     console.log(new Date().toUTCString());
-    port.write('I\r\n');
+    //port.write('I\r\n');
+    port.write('Hi Mom!');
+    port.write(new Buffer('Hi Mom!'));
 }, 5000); // update  
 
 
