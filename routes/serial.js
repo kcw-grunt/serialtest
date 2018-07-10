@@ -15,7 +15,7 @@ serialport.list(function (err, ports) {
 
   
 
-var devicePath = '/dev/ttyUSB0';
+var devicePath = '/dev/ttyUSB2';
 
 var osvar = process.platform;
 console.log(osvar);
@@ -23,7 +23,7 @@ if (osvar == 'darwin') {
 	console.log("Using Mac OS");
     devicePath = '/dev/tty.SLAB_USBtoUART';
 }else{ 
-	devicePath = '/dev/ttyUSB0';
+	devicePath = '/dev/ttyUSB2';
 }
  
   ///,
