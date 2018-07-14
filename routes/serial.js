@@ -101,7 +101,7 @@ setInterval(function() {
 	console.log(new Date().toUTCString()); 
 
 	//required to make flush work, for some reason
-    sendCMD("DISP\r\n");
+    sendCMD("C KM6TIG-2\r\n");
 	//console.log(port);
 }, 60000); // update  
 
