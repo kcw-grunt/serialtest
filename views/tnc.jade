@@ -1,0 +1,41 @@
+extends layout
+
+block content
+  body 
+  h1.h1main #{title} : #{sourcecallsign} #{sourceID}
+    br
+    br
+    .row
+        .column-tnc
+          form(method="POST" action="/tnc/sendmessage")
+            div.form-group
+              label.label.h2  Destination Callsign: 
+              input.input.main(style="text-transform: uppercase",maxlength="6",type="text", name="destcs", placeholder="KM6TIG")
+              label.label.h2       SSID: 
+              select.select(name="ssidd")
+                -for(var i = 0;i<16;i++){
+                option(value="#{i}") #{i}
+                -}
+            br
+            div.form-group
+              label.label.h2  Message: 
+              br
+              br
+              textarea(cols="20", rows="3",name="message")
+            br
+            button.btn.primary(type="submit") Send
+        | 
+        .column-tnc
+          form(method="POST" action="/tnc/cmd")
+            div.form-group
+              label.label.h2 CMD -> D72A:
+              input.input.m2(style="text-transform: uppercase",type="text", name="d72cmd") 
+              br
+              br
+              button.green-button(type="submit") Command
+            div.form-group
+            br
+            label.label.h3 #{cmd_response} 
+          label.label.h2 Message Response:
+          br
+          label.label.h3 #{remote_response}
