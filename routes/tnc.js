@@ -4,7 +4,16 @@ var router = express.Router();
 var ax25 = require('th-d72-ax25'); 
 var util = require('util');
 var dataLine = '';
-var devicePath = '/dev/KENWOOD_TH-D72A';
+var devicePath = '/dev/tty.SLAB_USBtoUART';
+ //'/dev/KENWOOD_TH-D72A';
+
+var osvar = process.platform;
+console.log(osvar);
+if (osvar == 'darwin') {
+	console.log("Using Mac OS");
+    devicePath = '/dev/tty.SLAB_USBtoUART';
+}
+
 
 var radiodata ="--NO RESPONSE--";
 var messageContent = ""; 
